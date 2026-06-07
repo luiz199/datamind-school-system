@@ -26,7 +26,7 @@ export interface PlanoAula {
   recursos: string;
   avaliacao: string;
   observacoes: string;
-  arquivoUrl?: string;
+  arquivoBase64?: string;
   arquivoNome?: string;
   arquivoTipo?: string;
   status: "pendente" | "aprovado" | "reprovado" | "correcao";

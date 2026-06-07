@@ -11,7 +11,7 @@ import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
   Send, FileText, Trophy, Clock, CheckCircle, AlertCircle,
-  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText,
+  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText, Download,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -67,6 +67,14 @@ export default function ProfessorDashboard() {
       toast.error("Preencha tema, objetivos e conteúdo");
       return;
     }
+    let arquivoBase64 = "";
+    if (arquivo) {
+      const buf = await arquivo.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      arquivoBase64 = btoa(binary);
+    }
     const novoPlano: PlanoAula = {
       id: crypto.randomUUID(),
       professorId: user?.id || "",
@@ -82,6 +90,7 @@ export default function ProfessorDashboard() {
       recursos: formData.recursos,
       avaliacao: formData.avaliacao,
       observacoes: formData.observacoes,
+      arquivoBase64,
       arquivoNome: arquivo?.name,
       arquivoTipo: arquivo?.type,
       status: "pendente",
@@ -328,6 +337,12 @@ export default function ProfessorDashboard() {
                   {plano.status === "pendente" ? "Pendente" : plano.status === "aprovado" ? "Aprovado" : plano.status === "correcao" ? "Ajustes" : "Recusado"}
                 </span>
                 {plano.nota && <span className="text-sm font-serif text-[#0d7377]">{plano.nota}</span>}
+                {plano.arquivoNome && (
+                  <a href={`/api/planos/${plano.id}/arquivo`} download={plano.arquivoNome}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0d7377]/10 text-[#0d7377] hover:bg-[#0d7377]/20 text-xs font-medium transition-colors" aria-label={`Baixar ${plano.arquivoNome}`}>
+                    <Download className="w-3.5 h-3.5" /> {plano.arquivoNome}
+                  </a>
+                )}
               </div>
             </div>
             <p className="text-sm text-[#6a6a7e] dark:text-[#aaaaae] line-clamp-2 mb-3">{plano.objetivos}</p>

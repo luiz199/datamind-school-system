@@ -7,6 +7,8 @@ export async function POST(req: Request) {
     const { nome, email, password, tipo } = await req.json();
     if (!nome || !email || !password || !tipo)
       return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
+    if (tipo === "admin")
+      return NextResponse.json({ error: "Tipo de usuário inválido" }, { status: 400 });
 
     const db = (await getClient()).db("eduplan");
     const existing = await db.collection("users").findOne({ email });

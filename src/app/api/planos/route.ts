@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import getClient from "@/lib/mongodb";
 
-const allowedFields = ["professorId", "professorNome", "materia", "serie", "turma", "data", "tema", "objetivos", "conteudo", "metodologia", "recursos", "avaliacao", "observacoes", "arquivoNome", "arquivoTipo", "status", "protocolo", "nota", "comentario"];
+const allowedFields = ["professorId", "professorNome", "materia", "serie", "turma", "data", "tema", "objetivos", "conteudo", "metodologia", "recursos", "avaliacao", "observacoes", "arquivoBase64", "arquivoNome", "arquivoTipo", "status", "protocolo", "nota", "comentario"];
 
 function sanitize(body: any) {
   const clean: any = {};

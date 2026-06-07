@@ -11,7 +11,7 @@ import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
   BarChart3, Trophy, Search, CheckCircle,
-  XCircle, Users, BookOpen, Clock, AlertCircle, Sparkles, Activity,
+  XCircle, Users, BookOpen, Clock, AlertCircle, Sparkles, Activity, Download,
 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import toast from "react-hot-toast";
@@ -323,6 +323,13 @@ export default function CoordenadorDashboard() {
                       <p className="text-[#6a6a7e] dark:text-[#aaaaae]">{plano.recursos}</p>
                     </div>
                   </div>
+
+                  {plano.arquivoNome && (
+                    <a href={`/api/planos/${plano.id}/arquivo`} download={plano.arquivoNome}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0d7377]/10 text-[#0d7377] hover:bg-[#0d7377]/20 text-sm font-medium transition-colors">
+                      <Download className="w-4 h-4" /> Baixar {plano.arquivoNome}
+                    </a>
+                  )}
 
                   <div className="space-y-3">
                     <textarea className="textarea-field text-sm h-20" placeholder="Escreva seu comentário sobre este plano..."

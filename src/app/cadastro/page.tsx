@@ -16,7 +16,7 @@ export default function CadastroPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [tipo, setTipo] = useState<"professor" | "coordenador" | "admin">("professor");
+  const [tipo, setTipo] = useState<"professor" | "coordenador">("professor");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +129,6 @@ export default function CadastroPage() {
           <select id="reg-tipo" value={tipo} onChange={(e) => setTipo(e.target.value as any)} className="w-full px-4 py-3.5 bg-white dark:bg-[#1a1a2e] border-2 border-[#e0d8cc] dark:border-[#2a2a3e] rounded-xl focus:border-[#0d7377] outline-none transition-all text-[#1a1a2e] dark:text-[#e8e4de] text-sm">
             <option value="professor">Professor</option>
             <option value="coordenador">Coordenador</option>
-            <option value="admin">Administrador</option>
           </select>
         </div>
         <motion.button type="submit" disabled={isLoading} className="btn-primary w-full mt-2"

@@ -10,10 +10,11 @@ import { getPlanos, addPlano, getUsers, deletePlano } from "@/lib/storage";
 import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
-  Send, FileText, Trophy, Clock, CheckCircle, AlertCircle,
-  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText, Download, Trash2,
+  Send, FileText, Trophy, Clock, CheckCircle, AlertCircle, Search,
+  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText, Download, Trash2, Copy,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import Confetti from "@/components/Confetti";
 
 export default function ProfessorDashboard() {
   const { user } = useAuth();
@@ -23,6 +24,10 @@ export default function ProfessorDashboard() {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [professores, setProfessores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchMeus, setSearchMeus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [prevNivel, setPrevNivel] = useState(user?.nivel || 1);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +37,13 @@ export default function ProfessorDashboard() {
       setLoading(false);
     })();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.nivel && user.nivel > prevNivel) {
+      setShowLevelUp(true);
+      setPrevNivel(user.nivel);
+    }
+  }, [user?.nivel]);
 
   const nivelInfo = getNivel(user?.pontuacao || 0);
   const progress = user ? Math.min((user.pontuacao / nivelInfo.nextLevel) * 100, 100) : 0;
@@ -314,18 +326,38 @@ export default function ProfessorDashboard() {
     </div>
   );
 
-  const renderMeusPlanos = () => (
+  const renderMeusPlanos = () => {
+    const filtered = planos
+      .filter((p) => !filterStatus || p.status === filterStatus)
+      .filter((p) => !searchMeus || p.tema.toLowerCase().includes(searchMeus.toLowerCase()) || p.materia.toLowerCase().includes(searchMeus.toLowerCase()));
+
+    return (
     <div className="space-y-4">
-      <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de]">Meus Planos</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de]">Meus Planos</h2>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8a8a9e]" />
+            <input type="text" value={searchMeus} onChange={(e) => setSearchMeus(e.target.value)} className="input-field pl-9 py-2 text-sm w-full sm:w-48" placeholder="Buscar..." />
+          </div>
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="select-field py-2 text-sm w-32">
+            <option value="">Todos</option>
+            <option value="pendente">Pendente</option>
+            <option value="aprovado">Aprovado</option>
+            <option value="correcao">Ajustes</option>
+            <option value="reprovado">Recusado</option>
+          </select>
+        </div>
+      </div>
       {loading ? (
         Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
-      ) : planos.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="paper-card p-12 text-center">
           <FileText className="w-10 h-10 text-[#d0c8bc] mx-auto mb-3" />
-          <p className="text-[#8a8a9e]">Nenhum plano enviado ainda</p>
+          <p className="text-[#8a8a9e]">Nenhum plano encontrado</p>
         </div>
       ) : (
-        planos.map((plano, i) => (
+        filtered.map((plano, i) => (
           <motion.div key={plano.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="paper-card p-6">
             <div className="flex flex-wrap gap-2 items-start justify-between mb-3">
               <div className="min-w-0 flex-1">
@@ -347,6 +379,14 @@ export default function ProfessorDashboard() {
                   </a>
                 )}
                 <button onClick={async () => {
+                  const dup = { ...plano, id: crypto.randomUUID(), tema: `${plano.tema} (cópia)`, status: "pendente" as const, protocolo: generateProtocol(), createdAt: new Date(), updatedAt: new Date(), nota: undefined, comentario: undefined };
+                  await addPlano(dup);
+                  setPlanos((prev) => [dup, ...prev]);
+                  toast.success("Plano duplicado!");
+                }} className="p-1.5 rounded-lg text-[#0d7377] hover:bg-[#0d7377]/10 transition-colors" aria-label="Duplicar plano">
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={async () => {
                   if (!confirm("Tem certeza que deseja excluir este plano?")) return;
                   const ok = await deletePlano(plano.id);
                   if (ok) { setPlanos((prev) => prev.filter((p) => p.id !== plano.id)); toast.success("Plano excluído"); }
@@ -366,6 +406,7 @@ export default function ProfessorDashboard() {
       )}
     </div>
   );
+  };
 
   const renderRanking = () => (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -418,6 +459,18 @@ export default function ProfessorDashboard() {
 
   return (
     <>
+      <Confetti active={showLevelUp} />
+      {showLevelUp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowLevelUp(false)}>
+          <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="paper-card p-10 text-center max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <Trophy className="w-16 h-16 text-[#e8a838] mx-auto mb-4" />
+            <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de] mb-2">🎉 Parabéns!</h2>
+            <p className="text-[#8a8a9e] mb-1">Você subiu para o</p>
+            <p className="text-4xl font-bold text-[#0d7377]">Nível {user?.nivel}</p>
+            <button onClick={() => setShowLevelUp(false)} className="btn-primary mt-6 w-full">Continuar</button>
+          </motion.div>
+        </div>
+      )}
       {tab === "dashboard" && renderDashboard()}
       {tab === "enviar" && renderEnviar()}
       {tab === "meus-planos" && renderMeusPlanos()}

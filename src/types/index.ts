@@ -2,7 +2,7 @@ export interface User {
   id: string;
   nome: string;
   email: string;
-  senha?: string;
+  password?: string;
   tipo: "professor" | "coordenador" | "admin";
   foto?: string;
   pontuacao: number;

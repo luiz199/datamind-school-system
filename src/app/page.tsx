@@ -53,7 +53,11 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #faf6f1 0%, #f0ece6 50%, #e8e0d6 100%)" }}>
-        <div className="w-8 h-8 border-2 border-[#1a1a2e] border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-2 border-[#1a1a2e] border-t-transparent rounded-full animate-spin" />
+          <div className="w-32 h-3 bg-[#e0d8cc] rounded-full animate-pulse" />
+          <div className="w-24 h-3 bg-[#e0d8cc] rounded-full animate-pulse" />
+        </div>
       </div>
     );
   }

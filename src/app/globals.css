@@ -152,6 +152,13 @@
     background-image: url("data:image/svg+xml,%3Csvg width='40' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6 Q10 0 20 6 T40 6' stroke='%233a3a4e' fill='none' stroke-width='2'/%3E%3C/svg%3E");
   }
 
+  /* Confetti animation */
+  @keyframes confetti {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    100% { opacity: 0; transform: translateY(80vh) rotate(720deg) scale(0.3); }
+  }
+  .animate-confetti { animation: confetti 1.5s ease-out forwards; }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }

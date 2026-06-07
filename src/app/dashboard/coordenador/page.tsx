@@ -6,15 +6,16 @@ import { useAuth } from "@/context/AuthContext";
 import { useSearchParams } from "next/navigation";
 import { MATERIAS, PlanoAula } from "@/types";
 import { formatDate } from "@/lib/utils";
-import { getPlanos, updatePlanoStatus, addLog, getUsers, getLogs, saveUsers } from "@/lib/storage";
+import { getPlanos, updatePlanoStatus, addLog, getUsers, getLogs, saveUsers, getConfig } from "@/lib/storage";
 import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
   BarChart3, Trophy, Search, CheckCircle,
-  XCircle, Users, BookOpen, Clock, AlertCircle, Sparkles, Activity, Download, BookCheck,
+  XCircle, Users, BookOpen, Clock, AlertCircle, Sparkles, Activity, Download, BookCheck, FileSpreadsheet,
 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import toast from "react-hot-toast";
+import Confetti from "@/components/Confetti";
 
 const COLORS = ["#0d7377", "#5a7a5a", "#e8a838", "#e8614a", "#8b5cf6"];
 
@@ -30,12 +31,15 @@ export default function CoordenadorDashboard() {
   const [comentarios, setComentarios] = useState<Record<string, string>>({});
   const [notas, setNotas] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<any>(null);
+  const [confetti, setConfetti] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [p, u] = await Promise.all([getPlanos(), getUsers()]);
+      const [p, u, c] = await Promise.all([getPlanos(), getUsers(), getConfig()]);
       setPlanos(p);
       setProfessores(u.filter((u: any) => u.tipo === "professor"));
+      setConfig(c);
       setLoading(false);
     })();
   }, []);
@@ -90,7 +94,8 @@ export default function CoordenadorDashboard() {
 
     const nota = notas[planoId] ? parseFloat(notas[planoId]) : undefined;
     const maxPts = Math.max(...planos.filter((p) => p.status === "aprovado" || status === "aprovado").map((p) => p.nota || 0), 10);
-    const pontos = status === "aprovado" ? Math.round((nota || maxPts) * 2) : 0;
+    const ptsAprovacao = config?.pontosAprovacao || 20;
+    const pontos = status === "aprovado" ? Math.round((nota || maxPts) * (ptsAprovacao / 10)) : 0;
 
     await updatePlanoStatus(planoId, status, nota);
 
@@ -126,6 +131,7 @@ export default function CoordenadorDashboard() {
 
     setPlanos(await getPlanos());
     const label = status === "aprovado" ? "aprovado" : status === "correcao" ? "enviado para correção" : "reprovado";
+    if (status === "aprovado") setConfetti(true);
     toast.success(`Plano ${label} com sucesso!`);
   };
 
@@ -367,9 +373,25 @@ export default function CoordenadorDashboard() {
     );
   };
 
+  const exportCSV = () => {
+    const header = "Protocolo,Tema,Professor,Matéria,Série,Turma,Status,Nota,Data\n";
+    const rows = planos.map((p) =>
+      `"${p.protocolo}","${p.tema}","${p.professorNome}","${p.materia}","${p.serie}","${p.turma}","${p.status}","${p.nota || ""}","${new Date(p.createdAt).toLocaleDateString("pt-BR")}"`
+    ).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `planos-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
   const renderRelatorios = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de]">Relatórios</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de]">Relatórios</h2>
+        <button onClick={exportCSV} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5a7a5a]/10 text-[#5a7a5a] hover:bg-[#5a7a5a]/20 text-sm font-medium transition-colors">
+          <FileSpreadsheet className="w-4 h-4" /> Exportar CSV
+        </button>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="paper-card p-6">
           <h3 className="text-lg text-[#1a1a2e] dark:text-[#e8e4de] mb-4">Planos por Matéria</h3>
@@ -491,6 +513,7 @@ export default function CoordenadorDashboard() {
 
   return (
     <>
+      <Confetti active={confetti} />
       {tab === "dashboard" && renderDashboard()}
       {tab === "planos" && renderPlanos()}
       {tab === "aulas-aprovadas" && renderAulasAprovadas()}

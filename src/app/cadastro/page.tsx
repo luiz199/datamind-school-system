@@ -60,11 +60,26 @@ export default function CadastroPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #faf6f1 0%, #f0ece6 50%, #e8e0d6 100%)" }}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-[#1a1a2e] border-t-transparent rounded-full animate-spin" />
-          <div className="w-32 h-3 bg-[#e0d8cc] rounded-full animate-pulse" />
-          <div className="w-24 h-3 bg-[#e0d8cc] rounded-full animate-pulse" />
+      <div className="min-h-screen flex items-center justify-center px-6 py-12" style={{ background: "linear-gradient(135deg, #faf6f1 0%, #f0ece6 50%, #e8e0d6 100%)" }}>
+        <div className="flex flex-col items-center gap-6 sm:gap-8 w-full max-w-xs">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+            <div className="absolute inset-0 border-[3px] border-[#0d7377]/20 rounded-full" />
+            <div className="absolute inset-0 border-[3px] border-[#0d7377] border-t-transparent rounded-full animate-spin" />
+            <motion.div className="absolute inset-0 flex items-center justify-center" animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
+              <Sparkles className="w-7 h-7 sm:w-9 sm:h-9 text-[#0d7377]" />
+            </motion.div>
+          </div>
+          <div className="text-center space-y-2">
+            <h1 className="text-lg sm:text-xl font-bold text-[#1a1a2e]" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}>EduPlan Manager</motion.span>
+            </h1>
+            <div className="flex items-center justify-center gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <motion.div key={i} className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#0d7377]" animate={{ y: [-4, 4, -4], opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
+              ))}
+            </div>
+            <p className="text-sm text-[#8a8a9e]">Preparando sua experiência...</p>
+          </div>
         </div>
       </div>
     );

@@ -6,12 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useSearchParams } from "next/navigation";
 import { MATERIAS, SERIES, TURMAS, PlanoAula, Materia } from "@/types";
 import { generateProtocol, formatDate, getNivel } from "@/lib/utils";
-import { getPlanos, addPlano, getUsers } from "@/lib/storage";
+import { getPlanos, addPlano, getUsers, deletePlano } from "@/lib/storage";
 import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
   Send, FileText, Trophy, Clock, CheckCircle, AlertCircle,
-  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText, Download,
+  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText, Download, Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -329,7 +329,7 @@ export default function ProfessorDashboard() {
                 <h3 className="font-medium text-[#1a1a2e] dark:text-[#e8e4de] truncate">{plano.tema}</h3>
                 <p className="text-sm text-[#8a8a9e] truncate">{plano.materia} · {plano.serie} · Turma {plano.turma}</p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                 <span className={
                   plano.status === "pendente" ? "badge-pendente" : plano.status === "aprovado" ? "badge-aprovado" : plano.status === "correcao" ? "badge-correcao" : "badge-reprovado"
                 }>
@@ -343,6 +343,14 @@ export default function ProfessorDashboard() {
                     <Download className="w-3.5 h-3.5" /> {plano.arquivoNome}
                   </a>
                 )}
+                <button onClick={async () => {
+                  if (!confirm("Tem certeza que deseja excluir este plano?")) return;
+                  const ok = await deletePlano(plano.id);
+                  if (ok) { setPlanos((prev) => prev.filter((p) => p.id !== plano.id)); toast.success("Plano excluído"); }
+                  else toast.error("Erro ao excluir plano");
+                }} className="p-1.5 rounded-lg text-[#e8614a] hover:bg-[#e8614a]/10 transition-colors" aria-label="Excluir plano">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
             <p className="text-sm text-[#6a6a7e] dark:text-[#aaaaae] line-clamp-2 mb-3">{plano.objetivos}</p>

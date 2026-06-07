@@ -20,6 +20,10 @@ export async function addPlano(plano: PlanoAula) {
   try { await api.planos.create(plano); } catch {}
 }
 
+export async function deletePlano(id: string) {
+  try { await api.planos.remove(id); return true; } catch { return false; }
+}
+
 /* ── Config ── */
 export interface SystemConfig {
   nome: string;

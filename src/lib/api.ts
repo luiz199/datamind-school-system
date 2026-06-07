@@ -19,6 +19,7 @@ export const api = {
     list: () => req("/planos"),
     create: (data: any) => req("/planos", { method: "POST", body: JSON.stringify(data) }),
     update: (id: string, data: any) => req(`/planos/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    remove: (id: string) => req(`/planos/${id}`, { method: "DELETE" }),
   },
   users: {
     list: () => req("/users"),

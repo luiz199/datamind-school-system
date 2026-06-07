@@ -56,6 +56,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [notificacoes, setNotificacoes] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    import("@/lib/storage").then((m) => m.getNotifications().then(setNotificacoes));
+    const interval = setInterval(() => {
+      import("@/lib/storage").then((m) => m.getNotifications().then(setNotificacoes));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  useEffect(() => {
+    if (notifOpen && notificacoes.some((n) => !n.lida)) {
+      import("@/lib/storage").then((m) => m.markNotificationsRead());
+      setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
+    }
+  }, [notifOpen]);
 
   useEffect(() => {
     if (!loading && !user) router.push("/");
@@ -77,11 +94,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const links = user.tipo === "professor" ? professorLinks : user.tipo === "coordenador" ? coordenadorLinks : adminLinks;
   const RoleIcon = roleIcon[user.tipo] || GraduationCap;
 
-  const notifs = [
-    { text: "Plano de Equações foi aprovado", time: "2 horas atrás", unread: true },
-    { text: "Novo comentário no plano #ABC123", time: "1 dia atrás", unread: true },
-    { text: "Você subiu para 2º no ranking!", time: "2 dias atrás", unread: false },
-  ];
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "agora";
+    if (mins < 60) return `${mins} min atrás`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h atrás`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d atrás`;
+  };
 
   return (
     <div className="min-h-screen bg-[#faf6f1] dark:bg-[#12121e]">
@@ -166,7 +188,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="relative">
                 <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-2 rounded-lg hover:bg-[#f0ece6] dark:hover:bg-[#1e1e2e] text-[#6a6a7e] dark:text-[#9a9aae] transition-colors" aria-label="Notificações">
                   <Bell className="w-4 h-4" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#e8614a] rounded-full" />
+                  {notificacoes.some((n) => !n.lida) && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#e8614a] rounded-full" />}
                 </button>
                 <AnimatePresence>
                   {notifOpen && (
@@ -174,17 +196,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="p-3 border-b border-[#e0d8cc]/30 dark:border-[#2a2a3e]/30">
                         <p className="text-sm font-medium text-[#1a1a2e] dark:text-[#e8e4de]">Notificações</p>
                       </div>
-                      {notifs.map((n, i) => (
-                        <div key={i} className={`p-3 border-b border-[#e0d8cc]/30 dark:border-[#2a2a3e]/30 last:border-0 ${n.unread ? "bg-[#f0ece6]/50 dark:bg-[#1e1e2e]/50" : ""}`}>
-                          <div className="flex items-start gap-2">
-                            <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${n.unread ? "bg-[#0d7377]" : "bg-transparent"}`} />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs text-[#1a1a2e] dark:text-[#e8e4de]">{n.text}</p>
-                              <p className="text-[10px] text-[#8a8a9e] mt-0.5">{n.time}</p>
+                      {notificacoes.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-[#8a8a9e]">Nenhuma notificação</div>
+                      ) : (
+                        notificacoes.slice(0, 10).map((n) => (
+                          <div key={n.id} className={`p-3 border-b border-[#e0d8cc]/30 dark:border-[#2a2a3e]/30 last:border-0 ${!n.lida ? "bg-[#f0ece6]/50 dark:bg-[#1e1e2e]/50" : ""}`}>
+                            <div className="flex items-start gap-2">
+                              <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${!n.lida ? "bg-[#0d7377]" : "bg-transparent"}`} />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs text-[#1a1a2e] dark:text-[#e8e4de]">{n.titulo}</p>
+                                <p className="text-[10px] text-[#8a8a9e] mt-0.5">{n.mensagem}</p>
+                                <p className="text-[9px] text-[#aaaabe] mt-0.5">{timeAgo(n.createdAt)}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    try { await fetch("/api/auth/session", { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("eduplan_token")}` } }); } catch {}
     setUser(null);
     localStorage.removeItem("eduplan_token");
   }, []);

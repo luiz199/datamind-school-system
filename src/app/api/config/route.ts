@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import getClient from "@/lib/mongodb";
+import { requireRole } from "@/lib/auth";
 
 export async function GET() {
   try {
@@ -12,9 +13,10 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
+    await requireRole(req, ["admin"]);
     const data = await req.json();
     const db = (await getClient()).db("eduplan");
     await db.collection("config").updateOne({ key: "system" }, { $set: data }, { upsert: true });
     return NextResponse.json({ ok: true });
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: e.message === "Não autorizado" || e.message === "Sessão inválida" ? 401 : e.message === "Permissão negada" ? 403 : 500 }); }
 }

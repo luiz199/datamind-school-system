@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import getClient from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireAuth(req);
     const db = (await getClient()).db("eduplan");
     let plano;
     try { plano = await db.collection("planos").findOne({ _id: new ObjectId(params.id) }); } catch { }

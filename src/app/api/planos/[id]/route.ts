@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import getClient from "@/lib/mongodb";
 import { ObjectId } from 'mongodb';
+import { requireRole } from "@/lib/auth";
 
 const allowedFields = ["status", "nota", "comentario", "updatedAt"];
 
@@ -14,6 +15,7 @@ function sanitize(body: any) {
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireRole(req, ["coordenador", "admin"]);
     const body = await req.json();
     const data = sanitize(body);
     data.updatedAt = new Date();
@@ -24,17 +26,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     );
     if (!result.matchedCount) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
     return NextResponse.json({ ok: true });
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: e.message === "Não autorizado" || e.message === "Sessão inválida" ? 401 : e.message === "Permissão negada" ? 403 : 500 }); }
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
+    const user = await requireRole(req, ["professor", "admin"]);
     const db = (await getClient()).db("eduplan");
-    let result;
-    try { result = await db.collection("planos").deleteOne({ _id: new ObjectId(params.id) }); } catch { }
-    if (!result || result.deletedCount === 0)
-      result = await db.collection("planos").deleteOne({ id: params.id });
-    if (!result.deletedCount) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+    const plano = await db.collection("planos").findOne({ _id: new ObjectId(params.id) });
+    if (!plano) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+    if (user.tipo !== "admin" && plano.professorId !== user.id)
+      return NextResponse.json({ error: "Permissão negada" }, { status: 403 });
+    await db.collection("planos").deleteOne({ _id: new ObjectId(params.id) });
     return NextResponse.json({ ok: true });
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: e.message === "Não autorizado" || e.message === "Sessão inválida" ? 401 : e.message === "Permissão negada" ? 403 : 500 }); }
 }

@@ -8,10 +8,6 @@ export async function getPlanos(): Promise<PlanoAula[]> {
   try { return await api.planos.list(); } catch { return []; }
 }
 
-export async function savePlanos(planos: PlanoAula[]) {
-  // Not used directly - planos are saved via individual add/update
-}
-
 export async function updatePlanoStatus(id: string, status: PlanoAula["status"], nota?: number, comentario?: string) {
   try { await api.planos.update(id, { status, ...(nota !== undefined && { nota }), ...(comentario && { comentario }) }); } catch {}
 }
@@ -58,8 +54,31 @@ export async function addLog(log: Omit<Log, "id"> & { id?: string }) {
   try { await api.logs.create(log); } catch {}
 }
 
-export async function saveLogs(logs: Log[]) {
-  // Not used directly - logs are saved via addLog
+/* ── Notifications ── */
+export async function createNotification(data: { usuarioId: string; tipo: string; titulo: string; mensagem: string }) {
+  try {
+    await fetch("/api/notificacoes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("eduplan_token")}` },
+      body: JSON.stringify({ ...data, lida: false, createdAt: new Date() }),
+    });
+  } catch {}
+}
+
+export async function getNotifications(): Promise<any[]> {
+  try {
+    const token = localStorage.getItem("eduplan_token");
+    const res = await fetch("/api/notificacoes", { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch { return []; }
+}
+
+export async function markNotificationsRead() {
+  try {
+    const token = localStorage.getItem("eduplan_token");
+    await fetch("/api/notificacoes", { method: "PATCH", headers: { Authorization: `Bearer ${token}` } });
+  } catch {}
 }
 
 /* ── Dark Mode (localStorage, stays sync) ── */

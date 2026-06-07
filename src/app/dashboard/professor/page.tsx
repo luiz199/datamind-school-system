@@ -69,6 +69,7 @@ export default function ProfessorDashboard() {
     }
     let arquivoBase64 = "";
     if (arquivo) {
+      if (arquivo.size > 10 * 1024 * 1024) { toast.error("Arquivo muito grande. Máximo 10MB"); return; }
       const buf = await arquivo.arrayBuffer();
       const bytes = new Uint8Array(buf);
       let binary = "";
@@ -316,7 +317,9 @@ export default function ProfessorDashboard() {
   const renderMeusPlanos = () => (
     <div className="space-y-4">
       <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de]">Meus Planos</h2>
-      {planos.length === 0 ? (
+      {loading ? (
+        Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+      ) : planos.length === 0 ? (
         <div className="paper-card p-12 text-center">
           <FileText className="w-10 h-10 text-[#d0c8bc] mx-auto mb-3" />
           <p className="text-[#8a8a9e]">Nenhum plano enviado ainda</p>

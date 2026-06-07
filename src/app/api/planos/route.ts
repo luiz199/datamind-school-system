@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import getClient from "@/lib/mongodb";
+import { requireRole } from "@/lib/auth";
 
 const allowedFields = ["professorId", "professorNome", "materia", "serie", "turma", "data", "tema", "objetivos", "conteudo", "metodologia", "recursos", "avaliacao", "observacoes", "arquivoBase64", "arquivoNome", "arquivoTipo", "status", "protocolo", "nota", "comentario"];
 
@@ -13,6 +14,7 @@ function sanitize(body: any) {
 
 export async function GET(req: Request) {
   try {
+    await requireRole(req, ["professor", "coordenador", "admin"]);
     const db = (await getClient()).db("eduplan");
     const { searchParams } = new URL(req.url);
     const filter: any = {};
@@ -22,11 +24,12 @@ export async function GET(req: Request) {
     if (status) filter.status = status;
     const planos = await db.collection("planos").find(filter).sort({ createdAt: -1 }).toArray();
     return NextResponse.json(planos.map((p: any) => ({ ...p, id: p._id.toString(), _id: undefined })));
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: e.message === "Não autorizado" || e.message === "Sessão inválida" ? 401 : e.message === "Permissão negada" ? 403 : 500 }); }
 }
 
 export async function POST(req: Request) {
   try {
+    await requireRole(req, ["professor", "coordenador"]);
     const body = await req.json();
     const data = sanitize(body);
     if (!data.tema || !data.professorId) return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
@@ -35,5 +38,5 @@ export async function POST(req: Request) {
     data.updatedAt = new Date();
     const result = await db.collection("planos").insertOne(data);
     return NextResponse.json({ id: result.insertedId.toString() }, { status: 201 });
-  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
+  } catch (e: any) { return NextResponse.json({ error: e.message }, { status: e.message === "Não autorizado" || e.message === "Sessão inválida" ? 401 : e.message === "Permissão negada" ? 403 : 500 }); }
 }

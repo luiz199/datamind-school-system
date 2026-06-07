@@ -16,6 +16,7 @@ export async function POST(req: Request) {
 
     const { _id, password: _, ...safe } = user;
     const token = crypto.randomUUID();
+    await db.collection("sessions").createIndex({ createdAt: 1 }, { expireAfterSeconds: 604800 });
     await db.collection("sessions").insertOne({ userId: user._id.toString(), token, createdAt: new Date() });
 
     return NextResponse.json({ user: { id: user._id.toString(), ...safe }, token });

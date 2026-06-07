@@ -85,6 +85,9 @@ export default function CoordenadorDashboard() {
   const ranking = [...professores].sort((a, b) => b.pontuacao - a.pontuacao).slice(0, 5);
 
   const handleAction = async (planoId: string, status: PlanoAula["status"]) => {
+    const labels: Record<string, string> = { aprovado: "aprovar", correcao: "enviar para correção", reprovado: "reprovar" };
+    if (!confirm(`Tem certeza que deseja ${labels[status]} este plano?`)) return;
+
     const nota = notas[planoId] ? parseFloat(notas[planoId]) : undefined;
     const maxPts = Math.max(...planos.filter((p) => p.status === "aprovado" || status === "aprovado").map((p) => p.nota || 0), 10);
     const pontos = status === "aprovado" ? Math.round((nota || maxPts) * 2) : 0;
@@ -109,8 +112,15 @@ export default function CoordenadorDashboard() {
         const profIdx = users.findIndex((u: any) => u.id === plano.professorId);
         if (profIdx !== -1) {
           users[profIdx].pontuacao += pontos;
+          users[profIdx].nivel = Math.min(Math.floor(users[profIdx].pontuacao / 100) + 1, 10);
           await import("@/lib/storage").then((m) => m.saveUsers(users));
         }
+        await import("@/lib/storage").then((m) => m.createNotification({
+          usuarioId: plano.professorId,
+          tipo: status,
+          titulo: status === "aprovado" ? "Plano aprovado!" : status === "correcao" ? "Ajustes solicitados" : "Plano recusado",
+          mensagem: `Seu plano "${plano.tema}" foi ${status === "aprovado" ? "aprovado" : status === "correcao" ? "enviado para correção" : "recusado"}${nota ? ` com nota ${nota}` : ""}.`,
+        }));
       }
     }
 

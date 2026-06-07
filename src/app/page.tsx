@@ -46,16 +46,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) { toast.error("Digite seu email primeiro"); return; }
-    try {
-      const users = await import("@/lib/storage").then((m) => m.getUsers());
-      const found = users.find((u: any) => u.email === email);
-      if (!found) { toast.error("Email não encontrado"); return; }
-      await api.users.update(found.id, { password: "123456" });
-      setPassword("123456");
-      toast.success("Senha redefinida para 123456");
-    } catch { toast.error("Erro ao redefinir senha"); }
+  const handleForgotPassword = () => {
+    toast.error("Contate o administrador para redefinir sua senha");
   };
 
   if (loading) {

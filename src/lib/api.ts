@@ -35,4 +35,8 @@ export const api = {
     get: () => req("/config"),
     save: (data: any) => req("/config", { method: "PUT", body: JSON.stringify(data) }),
   },
+  notificacoes: {
+    list: () => req("/notificacoes"),
+    markRead: () => req("/notificacoes", { method: "PATCH" }),
+  },
 };

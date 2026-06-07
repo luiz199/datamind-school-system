@@ -11,7 +11,7 @@ import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
   BarChart3, Trophy, Search, CheckCircle,
-  XCircle, Users, BookOpen, Clock, AlertCircle, Sparkles, Activity, Download,
+  XCircle, Users, BookOpen, Clock, AlertCircle, Sparkles, Activity, Download, BookCheck,
 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import toast from "react-hot-toast";
@@ -396,6 +396,56 @@ export default function CoordenadorDashboard() {
     </div>
   );
 
+  const renderAulasAprovadas = () => {
+    const aprovados = planos.filter((p) => p.status === "aprovado");
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de]">Aulas Aprovadas</h2>
+          <span className="text-sm text-[#8a8a9e]">{aprovados.length} plano(s)</span>
+        </div>
+
+        {aprovados.length === 0 ? (
+          <div className="paper-card p-12 text-center">
+            <BookCheck className="w-10 h-10 text-[#d0c8bc] mx-auto mb-3" />
+            <p className="text-[#8a8a9e]">Nenhum plano aprovado ainda</p>
+          </div>
+        ) : (
+          aprovados.map((plano, i) => (
+            <motion.div key={plano.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="paper-card p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-medium text-lg text-[#1a1a2e] dark:text-[#e8e4de]">{plano.tema}</h3>
+                  <p className="text-sm text-[#8a8a9e]">{plano.professorNome} · {plano.materia} · {plano.serie} · Turma {plano.turma}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="badge-aprovado"><CheckCircle className="w-3 h-3 mr-1" /> Aprovado</span>
+                  {plano.nota && <span className="text-sm font-serif text-[#0d7377]">{plano.nota}</span>}
+                </div>
+              </div>
+
+              <p className="text-sm text-[#6a6a7e] dark:text-[#aaaaae] line-clamp-2 mb-4">{plano.objetivos}</p>
+
+              <div className="flex items-center justify-between text-xs text-[#8a8a9e] pt-3 border-t border-[#e0d8cc]/30 dark:border-[#2a2a3e]/30">
+                <span className="font-mono">{plano.protocolo}</span>
+                <div className="flex items-center gap-2">
+                  {plano.arquivoNome && (
+                    <a href={`/api/planos/${plano.id}/arquivo`} download={plano.arquivoNome}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0d7377]/10 text-[#0d7377] hover:bg-[#0d7377]/20 text-xs font-medium transition-colors">
+                      <Download className="w-3.5 h-3.5" /> {plano.arquivoNome}
+                    </a>
+                  )}
+                  <span>{formatDate(plano.createdAt)}</span>
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+    );
+  };
+
   const renderRanking = () => (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="paper-card p-8 text-center">
@@ -433,6 +483,7 @@ export default function CoordenadorDashboard() {
     <>
       {tab === "dashboard" && renderDashboard()}
       {tab === "planos" && renderPlanos()}
+      {tab === "aulas-aprovadas" && renderAulasAprovadas()}
       {tab === "relatorios" && renderRelatorios()}
       {tab === "ranking" && renderRanking()}
     </>

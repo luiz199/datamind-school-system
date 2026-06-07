@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Send, BarChart3, Trophy, Bell, Users,
   Settings, LogOut, Menu, X, Sun, Moon, ClipboardCheck, ShieldCheck, FileText, Search,
-  GraduationCap, User, MessageSquareText,
+  GraduationCap, User, MessageSquareText, BookCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,6 +24,7 @@ const professorLinks = [
 const coordenadorLinks = [
   { href: "/dashboard/coordenador", icon: LayoutDashboard, label: "Visão Geral" },
   { href: "/dashboard/coordenador?tab=planos", icon: ClipboardCheck, label: "Revisar" },
+  { href: "/dashboard/coordenador?tab=aulas-aprovadas", icon: BookCheck, label: "Aulas Aprovadas" },
   { href: "/dashboard/coordenador?tab=relatorios", icon: BarChart3, label: "Relatórios" },
   { href: "/dashboard/coordenador?tab=ranking", icon: Trophy, label: "Ranking" },
 ];

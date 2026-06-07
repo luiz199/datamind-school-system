@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Send, BarChart3, Trophy, Bell, Users,
   Settings, LogOut, Menu, X, Sun, Moon, ClipboardCheck, ShieldCheck, FileText, Search,
-  GraduationCap, User,
+  GraduationCap, User, MessageSquareText,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +18,7 @@ const professorLinks = [
   { href: "/dashboard/professor?tab=enviar", icon: Send, label: "Novo Plano" },
   { href: "/dashboard/professor?tab=meus-planos", icon: FileText, label: "Meus Planos" },
   { href: "/dashboard/professor?tab=ranking", icon: Trophy, label: "Ranking" },
+  { href: "/dashboard/professor?tab=chat", icon: MessageSquareText, label: "Chat" },
 ];
 
 const coordenadorLinks = [

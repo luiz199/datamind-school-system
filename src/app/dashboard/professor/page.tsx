@@ -11,7 +11,7 @@ import StatCard from "@/components/StatCard";
 import { CardSkeleton } from "@/components/Skeleton";
 import {
   Send, FileText, Trophy, Clock, CheckCircle, AlertCircle,
-  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays,
+  Upload, Award, TrendingUp, Sparkles, ArrowRight, CalendarDays, MessageSquareText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -375,12 +375,28 @@ export default function ProfessorDashboard() {
     </div>
   );
 
+  const renderChat = () => (
+    <div className="max-w-3xl mx-auto">
+      <div className="paper-card p-12 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-[#0d7377]/10 flex items-center justify-center mx-auto mb-5">
+          <MessageSquareText className="w-7 h-7 text-[#0d7377]" />
+        </div>
+        <h2 className="text-2xl text-[#1a1a2e] dark:text-[#e8e4de] mb-3">Chat</h2>
+        <p className="text-lg font-serif text-[#8a8a9e] mb-2">Em breve!</p>
+        <p className="text-sm text-[#8a8a9e] max-w-md mx-auto">
+          Estamos trabalhando em um chat inteligente para você se comunicar com coordenadores e administradores.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {tab === "dashboard" && renderDashboard()}
       {tab === "enviar" && renderEnviar()}
       {tab === "meus-planos" && renderMeusPlanos()}
       {tab === "ranking" && renderRanking()}
+      {tab === "chat" && renderChat()}
     </>
   );
 }
